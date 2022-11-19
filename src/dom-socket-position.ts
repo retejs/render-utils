@@ -43,7 +43,11 @@ type ListenerData = {
   key?: string
 }
 
-export function useDOMSocketPosition<Schemes extends BaseSchemes, K>(areaPlugin: AreaPlugin<Schemes, Substitute<K>>): SocketPositionWatcher {
+type Props = {
+    padding?: number
+}
+
+export function useDOMSocketPosition<Schemes extends BaseSchemes, K>(areaPlugin: AreaPlugin<Schemes, Substitute<K>>, props?: Props): SocketPositionWatcher {
     const sockets = new SocketsPositionsStorage()
     const emitter = new EventEmitter<ListenerData>()
 
@@ -55,6 +59,7 @@ export function useDOMSocketPosition<Schemes extends BaseSchemes, K>(areaPlugin:
         return view
     }
 
+    // eslint-disable-next-line max-statements
     areaPlugin.addPipe(ctx => {
         const context = ctx as (Exclude<(typeof ctx), Substitute<K>> | ExpectArea2DExtra)
 
@@ -62,6 +67,9 @@ export function useDOMSocketPosition<Schemes extends BaseSchemes, K>(areaPlugin:
             const { nodeId, key, side, element } = context.data
             const { k } = areaPlugin.area.transform
             const position = getElementCenter(k, element, getNodeView(nodeId).element)
+            const padding = props && typeof props.padding !== 'undefined' ? props.padding : 12
+
+            position.x += side === 'input' ? -padding : padding
 
             sockets.add({ nodeId, key, side, element, position })
             emitter.emit({ nodeId, key, side })
