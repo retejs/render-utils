@@ -19,6 +19,6 @@ export type ExpectArea2DExtra = {
   data: SocketData
 }
 
-type IsCompatible<K> = K extends { data: infer P } ? CanAssignSignal<P, SocketData> : false
+type IsCompatible<K> = Extract<K, { type: 'render' }> extends { type: 'render', data: infer P } ? CanAssignSignal<P, SocketData> : false
 
 export type Substitute<K> = IsCompatible<K> extends true ? K : ExpectArea2DExtra
