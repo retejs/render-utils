@@ -1,4 +1,4 @@
-import { BaseSchemes } from 'rete'
+import { BaseSchemes, NodeId } from 'rete'
 import { AreaPlugin } from 'rete-area-plugin'
 
 import { ExpectArea2DExtra, Position, Side, SocketPositionWatcher, Substitute } from './types'
@@ -58,6 +58,15 @@ export function useDOMSocketPosition<Schemes extends BaseSchemes, K>(areaPlugin:
 
         return view
     }
+    function canculateSocketPosition(nodeId: NodeId, side: Side, element: HTMLElement) {
+        const { k } = areaPlugin.area.transform
+        const position = getElementCenter(k, element, getNodeView(nodeId).element)
+        const padding = props && typeof props.padding !== 'undefined' ? props.padding : 12
+
+        position.x += side === 'input' ? -padding : padding
+
+        return position
+    }
 
     // eslint-disable-next-line max-statements
     areaPlugin.addPipe(ctx => {
@@ -65,11 +74,7 @@ export function useDOMSocketPosition<Schemes extends BaseSchemes, K>(areaPlugin:
 
         if (context.type === 'rendered' && context.data.type === 'socket') {
             const { nodeId, key, side, element } = context.data
-            const { k } = areaPlugin.area.transform
-            const position = getElementCenter(k, element, getNodeView(nodeId).element)
-            const padding = props && typeof props.padding !== 'undefined' ? props.padding : 12
-
-            position.x += side === 'input' ? -padding : padding
+            const position = canculateSocketPosition(nodeId, side, element)
 
             sockets.add({ nodeId, key, side, element, position })
             emitter.emit({ nodeId, key, side })
@@ -77,6 +82,15 @@ export function useDOMSocketPosition<Schemes extends BaseSchemes, K>(areaPlugin:
             sockets.remove(context.data.element)
         } else if (context.type === 'nodetranslated') {
             emitter.emit({ nodeId: context.data.id })
+        } else if (context.type === 'noderesized') {
+            const { id: nodeId } = context.data
+
+            Array.from(sockets.elements.values())
+                .filter(item => item.nodeId === nodeId && item.side === 'output')
+                .forEach(item => {
+                    item.position = canculateSocketPosition(nodeId, item.side, item.element)
+                })
+            emitter.emit({ nodeId })
         }
         return ctx
     })
