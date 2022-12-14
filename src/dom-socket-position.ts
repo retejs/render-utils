@@ -1,4 +1,4 @@
-import { BaseSchemes, NodeId } from 'rete'
+import { BaseSchemes } from 'rete'
 import { AreaPlugin } from 'rete-area-plugin'
 
 import { ExpectArea2DExtra, Position, Side, SocketPositionWatcher, Substitute } from './types'
@@ -51,16 +51,9 @@ export function useDOMSocketPosition<Schemes extends BaseSchemes, K>(areaPlugin:
     const sockets = new SocketsPositionsStorage()
     const emitter = new EventEmitter<ListenerData>()
 
-    function getNodeView(nodeId: string) {
-        const view = areaPlugin.nodeViews.get(nodeId)
-
-        if (!view) throw 'node view not found'
-
-        return view
-    }
-    function canculateSocketPosition(nodeId: NodeId, side: Side, element: HTMLElement) {
+    function canculateSocketPosition(side: Side, element: HTMLElement, relative: HTMLElement) {
         const { k } = areaPlugin.area.transform
-        const position = getElementCenter(k, element, getNodeView(nodeId).element)
+        const position = getElementCenter(k, element, relative)
         const padding = props && typeof props.padding !== 'undefined' ? props.padding : 12
 
         position.x += side === 'input' ? -padding : padding
@@ -74,10 +67,14 @@ export function useDOMSocketPosition<Schemes extends BaseSchemes, K>(areaPlugin:
 
         if (context.type === 'rendered' && context.data.type === 'socket') {
             const { nodeId, key, side, element } = context.data
-            const position = canculateSocketPosition(nodeId, side, element)
+            const view = areaPlugin.nodeViews.get(nodeId)
 
-            sockets.add({ nodeId, key, side, element, position })
-            emitter.emit({ nodeId, key, side })
+            if (view) {
+                const position = canculateSocketPosition(side, element, view.element)
+
+                sockets.add({ nodeId, key, side, element, position })
+                emitter.emit({ nodeId, key, side })
+            }
         } else if (context.type === 'unmount') {
             sockets.remove(context.data.element)
         } else if (context.type === 'nodetranslated') {
@@ -88,7 +85,10 @@ export function useDOMSocketPosition<Schemes extends BaseSchemes, K>(areaPlugin:
             Array.from(sockets.elements.values())
                 .filter(item => item.nodeId === nodeId && item.side === 'output')
                 .forEach(item => {
-                    item.position = canculateSocketPosition(nodeId, item.side, item.element)
+                    const view = areaPlugin.nodeViews.get(nodeId)
+
+                    if (!view) return
+                    item.position = canculateSocketPosition(item.side, item.element, view.element)
                 })
             emitter.emit({ nodeId })
         }
@@ -104,9 +104,9 @@ export function useDOMSocketPosition<Schemes extends BaseSchemes, K>(areaPlugin:
                 if (!position) return
 
                 const { x, y } = position
-                const nodeView = getNodeView(nodeId)
+                const nodeView = areaPlugin.nodeViews.get(nodeId)
 
-                change({
+                if (nodeView) change({
                     x: x + nodeView.position.x,
                     y: y + nodeView.position.y
                 })
