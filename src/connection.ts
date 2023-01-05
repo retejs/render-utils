@@ -11,17 +11,18 @@ export function classicConnectionPath(points: number[], curvature: number) {
 export function loopConnectionPath(points: number[], curvature: number, size: number) {
     const [x1, y1, x2, y2] = points
     const k = y2 > y1 ? 1 : -1
+    const scale = size + Math.abs(x1 - x2) / (size / 2)
     const middleX = (x1 + x2) / 2
-    const middleY = y1 - k * size
+    const middleY = y1 - k * scale
     const vertical = (y2 - y1) * curvature
 
     return `
         M ${x1} ${y1}
-        C ${x1 + size} ${y1}
-        ${x1 + size} ${middleY - vertical}
+        C ${x1 + scale} ${y1}
+        ${x1 + scale} ${middleY - vertical}
         ${middleX} ${middleY}
-        C ${x2 - size} ${middleY + vertical}
-        ${x2 - size} ${y2}
+        C ${x2 - scale} ${middleY + vertical}
+        ${x2 - scale} ${y2}
         ${x2} ${y2}
     `
 }
