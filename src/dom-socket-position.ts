@@ -91,6 +91,11 @@ export function useDOMSocketPosition<Schemes extends BaseSchemes, K>(areaPlugin:
                     item.position = canculateSocketPosition(item.side, item.element, view.element)
                 })
             emitter.emit({ nodeId })
+        } else if (context.type === 'render' && context.data.type === 'connection') {
+            const { source, target } = context.data.payload
+            const nodeId = source || target
+
+            emitter.emit({ nodeId })
         }
         return ctx
     })
