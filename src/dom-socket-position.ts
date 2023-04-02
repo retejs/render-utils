@@ -42,23 +42,28 @@ type ListenerData = {
   side?: Side
   key?: string
 }
+type OffsetSocket = (position: Position, nodeId: string, side: Side, key: string) => Position
 
 type Props = {
-    padding?: number
+  offset?: OffsetSocket
 }
 
 export function useDOMSocketPosition<Schemes extends BaseSchemes, K>(areaPlugin: AreaPlugin<Schemes, Substitute<K>>, props?: Props): SocketPositionWatcher {
   const sockets = new SocketsPositionsStorage()
   const emitter = new EventEmitter<ListenerData>()
 
-  function canculateSocketPosition(side: Side, element: HTMLElement, relative: HTMLElement) {
+  function canculateSocketPosition(nodeId: string, side: Side, key: string, element: HTMLElement, relative: HTMLElement) {
     const { k } = areaPlugin.area.transform
     const position = getElementCenter(k, element, relative)
-    const padding = props && typeof props.padding !== 'undefined' ? props.padding : 12
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const offset = props?.offset ? props.offset : <OffsetSocket>(({ x, y }, _nodeId, socketSide) => {
+      return {
+        x: x + 12 * (socketSide === 'input' ? -1 : 1),
+        y
+      }
+    })
 
-    position.x += side === 'input' ? -padding : padding
-
-    return position
+    return offset(position, nodeId, side, key)
   }
 
   // eslint-disable-next-line max-statements
@@ -70,7 +75,7 @@ export function useDOMSocketPosition<Schemes extends BaseSchemes, K>(areaPlugin:
       const view = areaPlugin.nodeViews.get(nodeId)
 
       if (view) {
-        const position = canculateSocketPosition(side, element, view.element)
+        const position = canculateSocketPosition(nodeId, side, key, element, view.element)
 
         sockets.add({ nodeId, key, side, element, position })
         emitter.emit({ nodeId, key, side })
@@ -88,7 +93,7 @@ export function useDOMSocketPosition<Schemes extends BaseSchemes, K>(areaPlugin:
           const view = areaPlugin.nodeViews.get(nodeId)
 
           if (!view) return
-          item.position = canculateSocketPosition(item.side, item.element, view.element)
+          item.position = canculateSocketPosition(item.nodeId, item.side, item.key, item.element, view.element)
         })
       emitter.emit({ nodeId })
     } else if (context.type === 'render' && context.data.type === 'connection') {
