@@ -13,7 +13,7 @@ type SocketPayload = {
 }
 
 class SocketsPositionsStorage {
-  elements = new Map<HTMLElement, SocketPayload>()
+  elements = new Map<string, SocketPayload>()
 
   getPosition(data: { nodeId: string, key: string, side: Side }) {
     const list = Array.from(this.elements.values())
@@ -25,11 +25,13 @@ class SocketsPositionsStorage {
   }
 
   add(data: SocketPayload) {
-    this.elements.set(data.element, data)
+    this.elements.set([data.nodeId, data.side, data.key].join('_'), data)
   }
 
-  remove(element: SocketPayload['element']) {
-    this.elements.delete(element)
+  remove(nodeId: SocketPayload['nodeId']) {
+    for (const [key] of Array.from(this.elements.entries())) {
+      if (key.startsWith(`${nodeId}_`)) this.elements.delete(key)
+    }
   }
 
   snapshot() {
@@ -80,8 +82,8 @@ export function useDOMSocketPosition<Schemes extends BaseSchemes, K>(areaPlugin:
         sockets.add({ nodeId, key, side, element, position })
         emitter.emit({ nodeId, key, side })
       }
-    } else if (context.type === 'unmount') {
-      sockets.remove(context.data.element)
+    } else if (context.type === 'noderemoved') {
+      sockets.remove(context.data.id)
     } else if (context.type === 'nodetranslated') {
       emitter.emit({ nodeId: context.data.id })
     } else if (context.type === 'noderesized') {
