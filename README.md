@@ -15,14 +15,16 @@ Rete.js Render utils
 
 Before using this package, make sure to install it as a **peer** and **dev** dependency into your the render plugin.
 
-This package exposes `useDOMSocketPosition`, which is a `SocketPositionWatcher` type and used by default in render plugins.
+This package exposes `getDOMSocketPosition`, which is a `SocketPositionWatcher` type and used by default in render plugins.
 
 ```ts
-import { useDOMSocketPosition } from 'rete-render-utils';
+import { getDOMSocketPosition } from 'rete-render-utils';
 
-const socketsPositionWatcher = useDOMSocketPosition(area) // area is an instance of AreaPlugin
+const socketsPositionWatcher = getDOMSocketPosition<Schemes, AreaExtra>(area)
 
-const unwatch = positionWatcher(nodeId, portSide, portKey, (position) => {
+socketPositionWatcher.attach(area)
+
+const unwatch = positionWatcher.listen(nodeId, portSide, portKey, (position) => {
   /// called when the socket position changes
 })
 ```
