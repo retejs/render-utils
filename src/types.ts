@@ -1,24 +1,23 @@
-import { CanAssignSignal, NodeId } from 'rete'
+import { BaseSchemes, NodeId } from 'rete'
+
+export type RenderMeta = { filled?: boolean }
+export type RenderSignal<Type extends string, Data> =
+  | { type: 'render', data: { element: HTMLElement, type: Type } & RenderMeta & Data }
+  | { type: 'rendered', data: { element: HTMLElement, type: Type } & Data }
 
 export type Side = 'input' | 'output'
 export type Position = { x: number, y: number }
 type OnChange = (data: Position) => void
 
-export type SocketPositionWatcher = (nodeId: NodeId, side: Side, key: string, onChange: OnChange) => (() => void)
-
-type SocketData = {
-  type: 'socket',
-  nodeId: string,
-  key: string,
-  side: Side,
-  element: HTMLElement
+export type SocketPositionWatcher<Area> = {
+  attach(area: Area): void,
+  listen(nodeId: NodeId, side: Side, key: string, onChange: OnChange): (() => void)
 }
 
-export type ExpectArea2DExtra = {
-  type: 'rendered' | 'render',
-  data: SocketData
-}
-
-type IsCompatible<K> = Extract<K, { type: 'render' }> extends { type: 'render', data: infer P } ? CanAssignSignal<P, SocketData> : false
-
-export type Substitute<K> = IsCompatible<K> extends true ? K : ExpectArea2DExtra
+export type ExpectArea2DExtra<Schemes extends BaseSchemes> =
+  | RenderSignal<'socket', {
+    nodeId: string
+    key: string
+    side: Side
+  }>
+  | RenderSignal<'connection', { payload: Schemes['Connection'], start?: Position, end?: Position }>
