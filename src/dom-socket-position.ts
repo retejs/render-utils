@@ -48,8 +48,9 @@ type Props = {
   offset?: OffsetSocket
 }
 
-function calculateSocketPosition(params: { nodeId: string, side: Side, key: string, element: HTMLElement }, relative: HTMLElement, props: { k: number, offset?: OffsetSocket }) {
-  const position = getElementCenter(props.k, params.element, relative)
+function calculateSocketPosition(params: { nodeId: string, side: Side, key: string, element: HTMLElement }, relative: HTMLElement, props: { offset?: OffsetSocket }) {
+  const position = getElementCenter(params.element, relative)
+
   // eslint-disable-next-line @typescript-eslint/naming-convention
   const offset = props?.offset ? props.offset : <OffsetSocket>(({ x, y }, _nodeId, socketSide) => {
     return {
@@ -78,9 +79,8 @@ export function getDOMSocketPosition<Schemes extends BaseSchemes, K>(props?: Pro
           const { nodeId, key, side, element } = context.data
           const view = area?.nodeViews.get(nodeId)
 
-          if (area && view) {
-            const { k } = area.area.transform
-            const position = calculateSocketPosition(context.data, view.element, { k, offset: props?.offset })
+          if (view?.element) {
+            const position = calculateSocketPosition(context.data, view.element, { offset: props?.offset })
 
             sockets.add({ nodeId, key, side, element, position })
             emitter.emit({ nodeId, key, side })
@@ -97,8 +97,8 @@ export function getDOMSocketPosition<Schemes extends BaseSchemes, K>(props?: Pro
             .forEach(item => {
               const view = area?.nodeViews.get(nodeId)
 
-              if (!view || !area) return
-              item.position = calculateSocketPosition(item, view.element, { k: area.area.transform.k, offset: props?.offset })
+              if (!view?.element) return
+              item.position = calculateSocketPosition(item, view.element, { offset: props?.offset })
             })
           emitter.emit({ nodeId })
         } else if (context.type === 'render' && context.data.type === 'connection') {

@@ -1,13 +1,20 @@
 
-export function getElementCenter(zoom: number, element: HTMLElement, relative: HTMLElement) {
-  const elementBB = element.getBoundingClientRect()
-  const relativeBB = relative.getBoundingClientRect()
-  const x = (elementBB.left - relativeBB.left) / zoom
-  const y = (elementBB.top - relativeBB.top) / zoom
+export function getElementCenter(child: HTMLElement, parent: HTMLElement) {
+  let x = child.offsetLeft
+  let y = child.offsetTop
+  let currentElement = child.offsetParent as HTMLElement | null
+
+  while (currentElement !== null && currentElement !== parent) {
+    x += currentElement.offsetLeft + currentElement.clientLeft
+    y += currentElement.offsetTop + currentElement.clientTop
+    currentElement = currentElement.offsetParent as HTMLElement | null
+  }
+  const width = child.offsetWidth
+  const height = child.offsetHeight
 
   return {
-    x: (x + element.offsetWidth / 2),
-    y: (y + element.offsetHeight / 2)
+    x: (x + width / 2),
+    y: (y + height / 2)
   }
 }
 export class EventEmitter<T> {
