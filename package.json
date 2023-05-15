@@ -22,8 +22,8 @@
     "url": "https://github.com/retejs/render-utils/issues"
   },
   "peerDependencies": {
-    "rete": "^2.0.0-beta.1",
-    "rete-area-plugin": "^2.0.0-beta.1"
+    "rete": "^2.0.0-beta.9",
+    "rete-area-plugin": "^2.0.0-beta.11"
   },
   "devDependencies": {
     "rete": "^2.0.0-beta.1",

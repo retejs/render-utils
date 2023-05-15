@@ -1,5 +1,5 @@
-import { BaseSchemes, ScopeAsParameter } from 'rete'
-import { AreaPlugin } from 'rete-area-plugin'
+import { BaseSchemes, Scope } from 'rete'
+import { BaseAreaPlugin } from 'rete-area-plugin'
 
 import { ExpectArea2DExtra, Position, Side, SocketPositionWatcher } from './types'
 import { EventEmitter, getElementCenter } from './utils'
@@ -12,7 +12,7 @@ type SocketPayload = {
   position: Position // relative to node
 }
 
-class SocketsPositionsStorage {
+export class SocketsPositionsStorage {
   elements = new Map<HTMLElement, SocketPayload>()
 
   getPosition(data: { nodeId: string, key: string, side: Side }) {
@@ -62,14 +62,16 @@ async function calculateSocketPosition(params: { nodeId: string, side: Side, key
   return offset(position, params.nodeId, params.side, params.key)
 }
 
-export function getDOMSocketPosition<Schemes extends BaseSchemes, K>(props?: Props): SocketPositionWatcher<ScopeAsParameter<AreaPlugin<Schemes, K>, [ExpectArea2DExtra<Schemes>]>> {
+export function getDOMSocketPosition<Schemes extends BaseSchemes, K>(props?: Props): SocketPositionWatcher<Scope<never, [K]>> {
   const sockets = new SocketsPositionsStorage()
   const emitter = new EventEmitter<ListenerData>()
-  let area: AreaPlugin<Schemes, ExpectArea2DExtra<Schemes>> | null = null
+  let area: BaseAreaPlugin<Schemes, ExpectArea2DExtra<Schemes>> | null = null
 
   return {
-    attach(areaPlugin) {
-      area = areaPlugin as AreaPlugin<Schemes, ExpectArea2DExtra<Schemes>>
+    attach(scope) {
+      if (area) return
+      if (!scope.hasParent()) return
+      area = scope.parentScope<BaseAreaPlugin<Schemes, ExpectArea2DExtra<Schemes>>>(BaseAreaPlugin)
 
       // eslint-disable-next-line max-statements, complexity
       area.addPipe(async context => {
@@ -92,14 +94,14 @@ export function getDOMSocketPosition<Schemes extends BaseSchemes, K>(props?: Pro
         } else if (context.type === 'noderesized') {
           const { id: nodeId } = context.data
 
-          Array.from(sockets.elements.values())
+          await Promise.all(Array.from(sockets.elements.values())
             .filter(item => item.nodeId === nodeId && item.side === 'output')
-            .forEach(item => {
+            .map(async item => {
               const view = area?.nodeViews.get(nodeId)
 
               if (!view?.element) return
-              item.position = calculateSocketPosition(item, view.element, { offset: props?.offset })
-            })
+              item.position = await calculateSocketPosition(item, view.element, { offset: props?.offset })
+            }))
           emitter.emit({ nodeId })
         } else if (context.type === 'render' && context.data.type === 'connection') {
           const { source, target } = context.data.payload
@@ -116,10 +118,10 @@ export function getDOMSocketPosition<Schemes extends BaseSchemes, K>(props?: Pro
         if ((!data.key || data.side === side) && (!data.side || data.key === key)) {
           const position = sockets.getPosition({ side, nodeId, key })
 
-          if (!position || !area) return
+          if (!position) return
 
           const { x, y } = position
-          const nodeView = area.nodeViews.get(nodeId)
+          const nodeView = area?.nodeViews.get(nodeId)
 
           if (nodeView) change({
             x: x + nodeView.position.x,

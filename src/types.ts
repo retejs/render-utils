@@ -21,3 +21,6 @@ export type ExpectArea2DExtra<Schemes extends BaseSchemes> =
     side: Side
   }>
   | RenderSignal<'connection', { payload: Schemes['Connection'], start?: Position, end?: Position }>
+  | { type: 'unmount', data: { element: HTMLElement } }
+  | { type: 'noderesized', data: { id: string } }
+  | { type: 'nodetranslated', data: { id: string, position: any } }
