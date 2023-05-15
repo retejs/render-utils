@@ -1,8 +1,15 @@
 
-export function getElementCenter(child: HTMLElement, parent: HTMLElement) {
+// eslint-disable-next-line max-statements
+export async function getElementCenter(child: HTMLElement, parent: HTMLElement) {
+  while (!child.offsetParent) {
+    await new Promise((res) => setTimeout(res, 0))
+  }
+
   let x = child.offsetLeft
   let y = child.offsetTop
   let currentElement = child.offsetParent as HTMLElement | null
+
+  if (!currentElement) throw new Error('child has null offsetParent')
 
   while (currentElement !== null && currentElement !== parent) {
     x += currentElement.offsetLeft + currentElement.clientLeft
