@@ -9,7 +9,7 @@ Rete.js Render utils
 
 - **Basic connection paths**: provides the classic and loop SVG paths
 - **Sockets position**: enables the calculation of socket positions
-  - **DOM-based**: calculates the position of sockets using `getBoundingClientRect`
+  - **DOM-based**: calculates the position of sockets using `offsetTop`/`offsetLeft`
 
 ## Getting Started
 
