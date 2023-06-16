@@ -17,11 +17,17 @@ export class SocketsPositionsStorage {
 
   getPosition(data: { nodeId: string, key: string, side: Side }) {
     const list = Array.from(this.elements.values())
-    const found = list.find(item => {
+    const found = list.filter(item => {
       return item.side === data.side && item.nodeId === data.nodeId && item.key === data.key
     })
 
-    return found?.position || null
+    // eslint-disable-next-line no-console
+    if (found.length > 1) console.warn([
+      'Found more than one element for socket with same key and side.',
+      'Probably it was not unmounted correctly'
+    ].join(' '), data)
+
+    return found.pop()?.position || null
   }
 
   add(data: SocketPayload) {
