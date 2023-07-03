@@ -42,7 +42,7 @@ export abstract class BaseSocketPosition<Schemes extends BaseSchemes, K> impleme
       } else if (context.type === 'noderesized') {
         const { id: nodeId } = context.data
 
-        await Promise.all(Array.from(this.sockets.elements.values())
+        await Promise.all(this.sockets.snapshot()
           .filter(item => item.nodeId === context.data.id && item.side === 'output')
           .map(async item => {
             const { side, key, element } = item
