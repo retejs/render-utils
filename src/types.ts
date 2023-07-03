@@ -1,4 +1,4 @@
-import { BaseSchemes, NodeId } from 'rete'
+import { BaseSchemes } from 'rete'
 
 export type RenderMeta = { filled?: boolean }
 export type RenderSignal<Type extends string, Data> =
@@ -7,12 +7,6 @@ export type RenderSignal<Type extends string, Data> =
 
 export type Side = 'input' | 'output'
 export type Position = { x: number, y: number }
-type OnChange = (data: Position) => void
-
-export type SocketPositionWatcher<Area> = {
-  attach(area: Area): void,
-  listen(nodeId: NodeId, side: Side, key: string, onChange: OnChange): (() => void)
-}
 
 export type ExpectArea2DExtra<Schemes extends BaseSchemes> =
   | RenderSignal<'socket', {

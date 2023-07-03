@@ -1,4 +1,8 @@
 export * from './connection'
-export { getDOMSocketPosition, SocketsPositionsStorage } from './dom-socket-position'
-export type { SocketPositionWatcher } from './types'
+export type { SocketPositionWatcher } from './sockets-position'
+export {
+  BaseSocketPosition,
+  DOMSocketPosition,
+  getDOMSocketPosition
+} from './sockets-position'
 export { getElementCenter } from './utils'
