@@ -81,7 +81,9 @@ export abstract class BaseSocketPosition<Schemes extends BaseSchemes, K> impleme
       }
     })
 
-    this.sockets.snapshot().forEach(data => this.emitter.emit(data))
+    this.sockets.snapshot().forEach(data => {
+      if (data.nodeId === nodeId) this.emitter.emit(data)
+    })
     return unlisten
   }
 }
