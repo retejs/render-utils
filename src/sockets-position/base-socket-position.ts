@@ -12,13 +12,33 @@ type ListenerData = {
   key?: string
 }
 
+/**
+ * Abstract class for socket position calculation. It can be extended to implement custom socket position calculation.
+ * @abstract
+ * @listens render
+ * @listens rendered
+ * @listens unmount
+ * @listens nodetranslated
+ * @listens noderesized
+ */
 export abstract class BaseSocketPosition<Schemes extends BaseSchemes, K> implements SocketPositionWatcher<Scope<never, [K]>> {
   sockets = new SocketsPositionsStorage()
   emitter = new EventEmitter<ListenerData>()
   area: BaseAreaPlugin<Schemes, ExpectArea2DExtra<Schemes>> | null = null
 
+  /**
+   * The method needs to be implemented that calculates the position of the socket.
+   * @param nodeId Node ID
+   * @param side Side of the socket, 'input' or 'output'
+   * @param key Socket key
+   * @param element Socket element
+   */
   abstract calculatePosition(nodeId: string, side: Side, key: string, element: HTMLElement): Promise<Position | null>
 
+  /**
+   * Attach the watcher to the area's child scope.
+   * @param scope Scope of the watcher that should be a child of `BaseAreaPlugin`
+   */
   attach(scope: Scope<never, [K]>) {
     if (this.area) return
     if (!scope.hasParent()) return
@@ -63,6 +83,14 @@ export abstract class BaseSocketPosition<Schemes extends BaseSchemes, K> impleme
     })
   }
 
+  /**
+   * Listen to socket position changes. Usually used by rendering plugins to update the start/end of the connection.
+   * @internal
+   * @param nodeId Node ID
+   * @param side Side of the socket, 'input' or 'output'
+   * @param key Socket key
+   * @param change Callback function that is called when the socket position changes
+   */
   listen(nodeId: NodeId, side: Side, key: string, change: OnChange) {
     const unlisten = this.emitter.listen((data: ListenerData) => {
       if (data.nodeId !== nodeId) return

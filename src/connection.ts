@@ -1,5 +1,10 @@
 import { Position } from './types'
 
+/**
+ * Get classic SVG path for a connection between two points.
+ * @param points Array of two points
+ * @param curvature Curvature of the connection
+ */
 export function classicConnectionPath(points: [Position, Position], curvature: number) {
   const [{ x: x1, y: y1 }, { x: x2, y: y2 }] = points
   const vertical = Math.abs(y1 - y2)
@@ -9,6 +14,12 @@ export function classicConnectionPath(points: [Position, Position], curvature: n
   return `M ${x1} ${y1} C ${hx1} ${y1} ${hx2} ${y2} ${x2} ${y2}`
 }
 
+/**
+ * Get loop SVG path for a connection between two points.
+ * @param points Array of two points
+ * @param curvature Curvature of the loop
+ * @param size Size of the loop
+ */
 export function loopConnectionPath(points: [Position, Position], curvature: number, size: number) {
   const [{ x: x1, y: y1 }, { x: x2, y: y2 }] = points
   const k = y2 > y1 ? 1 : -1

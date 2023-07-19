@@ -1,5 +1,13 @@
+/* eslint-disable max-statements */
 
-// eslint-disable-next-line max-statements
+/**
+* Calculates the center coordinates of a child element relative to a parent element.
+* @async
+* @param child The child element whose center coordinates need to be calculated.
+* @param parent The parent element relative to which the child element's center is calculated.
+* @returns Position of the child element's center
+* @throws Error if the child element has a null offsetParent.
+*/
 export async function getElementCenter(child: HTMLElement, parent: HTMLElement) {
   while (!child.offsetParent) {
     await new Promise((res) => setTimeout(res, 0))
