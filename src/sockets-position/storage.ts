@@ -23,15 +23,17 @@ export class SocketsPositionsStorage {
       'Probably it was not unmounted correctly'
     ].join(' '), data)
 
-    return found.pop()?.position || null
+    return found.pop()?.position ?? null
   }
 
   add(data: SocketPayload) {
     const existing = this.elements.get(data.element)
 
-    this.elements.set(data.element, existing ? [
-      ...existing.filter(n => !(n.nodeId === data.nodeId && n.key === data.key && n.side === data.side)), data
-    ] : [data])
+    this.elements.set(data.element, existing
+      ? [
+        ...existing.filter(n => !(n.nodeId === data.nodeId && n.key === data.key && n.side === data.side)), data
+      ]
+      : [data])
   }
 
   remove(element: SocketPayload['element']) {

@@ -44,7 +44,7 @@ export abstract class BaseSocketPosition<Schemes extends BaseSchemes, K> impleme
     if (!scope.hasParent()) return
     this.area = scope.parentScope<BaseAreaPlugin<Schemes, ExpectArea2DExtra<Schemes>>>(BaseAreaPlugin)
 
-    // eslint-disable-next-line max-statements, complexity
+    // eslint-disable-next-line max-statements
     this.area.addPipe(async context => {
       if (context.type === 'rendered' && context.data.type === 'socket') {
         const { nodeId, key, side, element } = context.data
