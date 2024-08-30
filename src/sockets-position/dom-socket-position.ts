@@ -33,10 +33,12 @@ export class DOMSocketPosition<Schemes extends BaseSchemes, K> extends BaseSocke
     if (!view?.element) return null
     const position = await getElementCenter(element, view.element)
 
-    if (this.props?.offset) return this.props?.offset(position, nodeId, side, key)
+    if (this.props?.offset) return this.props.offset(position, nodeId, side, key)
 
     return {
-      x: position.x + 12 * (side === 'input' ? -1 : 1),
+      x: position.x + 12 * (side === 'input'
+        ? -1
+        : 1),
       y: position.y
     }
   }

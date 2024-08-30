@@ -1,16 +1,16 @@
 /* eslint-disable max-statements */
 
 /**
-* Calculates the center coordinates of a child element relative to a parent element.
-* @async
-* @param child The child element whose center coordinates need to be calculated.
-* @param parent The parent element relative to which the child element's center is calculated.
-* @returns Position of the child element's center
-* @throws Error if the child element has a null offsetParent.
-*/
+ * Calculates the center coordinates of a child element relative to a parent element.
+ * @async
+ * @param child The child element whose center coordinates need to be calculated.
+ * @param parent The parent element relative to which the child element's center is calculated.
+ * @returns Position of the child element's center
+ * @throws Error if the child element has a null offsetParent.
+ */
 export async function getElementCenter(child: HTMLElement, parent: HTMLElement) {
   while (!child.offsetParent) {
-    await new Promise((res) => setTimeout(res, 0))
+    await new Promise(res => setTimeout(res, 0))
   }
 
   let x = child.offsetLeft
@@ -28,15 +28,17 @@ export async function getElementCenter(child: HTMLElement, parent: HTMLElement) 
   const height = child.offsetHeight
 
   return {
-    x: (x + width / 2),
-    y: (y + height / 2)
+    x: x + width / 2,
+    y: y + height / 2
   }
 }
 export class EventEmitter<T> {
   listeners = new Set<(data: T) => void>()
 
   emit(data: T) {
-    this.listeners.forEach(listener => listener(data))
+    this.listeners.forEach(listener => {
+      listener(data)
+    })
   }
 
   listen(handler: (data: T) => void) {
